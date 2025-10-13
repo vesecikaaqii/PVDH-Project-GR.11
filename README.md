@@ -20,6 +20,6 @@ Repository përmban projektin e kesaj lende me teme FIFA 21 duke perfshire tre f
 
 Projekti eshte punuar nga: 
 
-Vesë Cikaqi
-Fleta Mujaj
+Vesë Cikaqi,
+Fleta Mujaj,
 Dasara Rexhaj
