@@ -1,6 +1,6 @@
 import pandas as pd
 
-ds = pd.read_csv("fifa21 raw data v2.csv", low_memory=False)
+ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
 # Quick check per kolona
 #print(ds.shape)
@@ -75,8 +75,21 @@ for col in star_cols:
 
 clean_file_path = "fifa21_cleaned.csv"
 
+
+# Kontroll i vlerave unike për disa kolona kryesore
+for col in ['Nationality', 'Club', 'Preferred Foot']:
+    if col in ds.columns:
+        print(f"\nKolona: {col}")
+        print("Numri i vlerave unike:", ds[col].nunique())
+
+
+
+
 # dataset i ri
 ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
 ds.head()
 ds.info()
+ 
+
+ 
