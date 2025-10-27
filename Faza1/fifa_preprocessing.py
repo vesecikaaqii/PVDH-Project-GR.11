@@ -79,9 +79,19 @@ clean_file_path = "fifa21_cleaned.csv"
 # Kontroll i vlerave unike për disa kolona kryesore
 for col in ['Nationality', 'Club', 'Preferred Foot']:
     if col in ds.columns:
-        print(f"\nKolona: {col}")
-        print("Numri i vlerave unike:", ds[col].nunique())
+        print(f"\nColumns: {col}")
+        print("Number of unique values:", ds[col].nunique())
 
+#Trajtimi i kolonave me datat e kontrates
+ds['Joined'] = pd.to_datetime(ds['Joined'], errors='coerce')
+
+#Loaned Player
+# Ruaj kolonen origjinale
+ds['Loan_Date_Orig'] = ds['Loan Date End']
+ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
+# Shfaq 10 rreshtat e pare dhe bej krahasimin para-pas   
+#NAN -> NaT
+print(ds[['Name', 'Loan_Date_Orig', 'Loan Date End']].head(10))
 
 
 
@@ -90,6 +100,3 @@ ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
 ds.head()
 ds.info()
- 
-
- 
