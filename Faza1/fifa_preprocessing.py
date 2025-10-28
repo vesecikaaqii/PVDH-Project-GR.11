@@ -156,8 +156,6 @@ print(ds[['Name','Age_Group', 'Position_Category']].head())
 # dataset i ri
 ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
-#ds.head()
-#ds.info()
 
 print(club_avg_value_sorted.head())
 print(nationality_wage_total_sorted.head())
