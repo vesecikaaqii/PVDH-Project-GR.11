@@ -48,7 +48,6 @@ def height_to_cm(x):
 
 ds['Height'] = ds['Height'].apply(height_to_cm).astype(int)
 
-
 # Konvertimi i weight
 def weight_to_kg(x):
     if isinstance(x, str):
@@ -66,6 +65,7 @@ def weight_to_kg(x):
     return x
 
 ds['Weight'] = ds['Weight'].apply(weight_to_kg).astype(int)
+
 # Aggregation
 club_avg_value = ds.groupby('Club')['Value'].mean().reset_index()
 club_avg_value_sorted = club_avg_value.sort_values(by='Value', ascending=False)
@@ -86,6 +86,7 @@ club_value_summary = ds.groupby('Club')['Value'].agg(
     MinValue='min',
     NumPlayers='size'
 ).reset_index()
+
 #star rating columns, removing stars/symbols
 star_cols = ['W/F', 'SM', 'IR']
 for col in star_cols:
