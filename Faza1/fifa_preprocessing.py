@@ -29,7 +29,6 @@ def convert_value(x):
 for col in ['Value','Wage','Release Clause','Hits']:
     ds[col] = ds[col].apply(convert_value)
     
-
 # Konvertimi i height in to cm
 def height_to_cm(x):
     if isinstance(x, str):
