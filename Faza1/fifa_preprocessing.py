@@ -105,8 +105,6 @@ for col in ['Nationality', 'Club', 'Preferred Foot']:
 #Trajtimi i kolonave me datat e kontrates
 ds['Joined'] = pd.to_datetime(ds['Joined'], errors='coerce')
 
-#Loaned Player
-# Ruaj kolonen origjinale
 ds['Loan_Date_Orig'] = ds['Loan Date End']
 ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
 # Shfaq 10 rreshtat e pare dhe bej krahasimin para-pas   
