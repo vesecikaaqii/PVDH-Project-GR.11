@@ -66,7 +66,26 @@ def weight_to_kg(x):
     return x
 
 ds['Weight'] = ds['Weight'].apply(weight_to_kg).astype(int)
+# Aggregation
+club_avg_value = ds.groupby('Club')['Value'].mean().reset_index()
+club_avg_value_sorted = club_avg_value.sort_values(by='Value', ascending=False)
 
+nationality_wage_total = ds.groupby('Nationality')['Wage'].sum().reset_index()
+nationality_wage_total_sorted = nationality_wage_total.sort_values(by='Wage', ascending=False)
+
+players_per_club = ds.groupby('Club').size().reset_index(name='Number of Players')
+players_per_club_sorted = players_per_club.sort_values(by='Number of Players', ascending=False)
+
+club_median_age = ds.groupby('Club')['Age'].median().reset_index()
+club_median_age_sorted = club_median_age.sort_values(by='Age', ascending=False)
+
+club_value_summary = ds.groupby('Club')['Value'].agg(
+    TotalValue='sum',
+    AverageValue='mean',
+    MaxValue='max',
+    MinValue='min',
+    NumPlayers='size'
+).reset_index()
 #star rating columns, removing stars/symbols
 star_cols = ['W/F', 'SM', 'IR']
 for col in star_cols:
@@ -140,3 +159,9 @@ ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
 #ds.head()
 #ds.info()
+
+print(club_avg_value_sorted.head())
+print(nationality_wage_total_sorted.head())
+print(players_per_club_sorted.head())
+print(club_median_age_sorted.head())
+print(club_value_summary.head())
