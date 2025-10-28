@@ -10,6 +10,7 @@ ds.info()
 
 # Missing vlaues count
 ds.isnull().sum()
+#print("Duplicate rows:", ds.duplicated().sum()) #checking for duplicates
 
 def convert_value(x):
     if isinstance(x, str):
@@ -104,8 +105,39 @@ ds['GOALKEEPING'] = ds[['GK Diving', 'GK Handling', 'GK Kicking', 'GK Positionin
 # quick preview of the new features
 # print(ds[['Name', 'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING']].head())
 
+#Diskretizimi ne baze te moshes (binning)
+if 'Age' in ds.columns:
+    ds['Age_Group'] = pd.cut(
+        ds['Age'],
+        bins=[15, 22, 30, 40, 50],  # define boundaries
+        labels=['Young', 'Prime', 'Veteran', 'Retired'],  # assign names
+        include_lowest=True
+    )
+
+# Diskretizimi ne baze te pozites ne fushe (grouping)
+def simplify_position(pos):
+    if isinstance(pos, str):
+        pos = pos.upper()
+        if pos in ['GK']:
+            return 'Goalkeeper'
+        elif pos in ['CB', 'LCB', 'RCB', 'LB', 'RB', 'LWB', 'RWB']:
+            return 'Defender'
+        elif pos in ['CDM', 'CM', 'LCM', 'RCM', 'CAM', 'LM', 'RM']:
+            return 'Midfielder'
+        elif pos in ['ST', 'CF', 'LW', 'RW', 'LF', 'RF']:
+            return 'Forward'
+        else:
+            return 'Other'
+    return 'Unknown'
+
+if 'Best Position' in ds.columns:
+    ds['Position_Category'] = ds['Best Position'].apply(simplify_position)
+
+#print(ds.iloc[35:101][['Name', 'Age_Group', 'Position_Category']])
+print(ds[['Name','Age_Group', 'Position_Category']].head())
+
 # dataset i ri
 ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
-ds.head()
-ds.info()
+#ds.head()
+#ds.info()
