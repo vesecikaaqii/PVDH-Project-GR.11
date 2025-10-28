@@ -93,7 +93,16 @@ ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
 #NAN -> NaT
 print(ds[['Name', 'Loan_Date_Orig', 'Loan Date End']].head(10))
 
+#krijimi i vetive te reja prej vetive ekzistuese
+ds['SKILL'] = ds[['Dribbling', 'Curve', 'FK Accuracy', 'Long Passing', 'Ball Control']].mean(axis=1)
+ds['MOVEMENT'] = ds[['Acceleration', 'Sprint Speed', 'Agility', 'Reactions', 'Balance']].mean(axis=1)
+ds['POWER'] = ds[['Shot Power', 'Jumping', 'Stamina', 'Strength', 'Long Shots']].mean(axis=1)
+ds['MENTALITY'] = ds[['Aggression', 'Interceptions', 'Positioning', 'Vision', 'Penalties', 'Composure']].mean(axis=1)
+ds['DEFENDING'] = ds[['Marking', 'Standing Tackle', 'Sliding Tackle']].mean(axis=1)
+ds['GOALKEEPING'] = ds[['GK Diving', 'GK Handling', 'GK Kicking', 'GK Positioning', 'GK Reflexes']].mean(axis=1)
 
+# quick preview of the new features
+# print(ds[['Name', 'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING']].head())
 
 # dataset i ri
 ds.to_csv("fifa21_cleaned.csv", index=False)
