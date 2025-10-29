@@ -95,6 +95,16 @@ for col in star_cols:
 
 clean_file_path = "fifa21_cleaned.csv"
 
+if 'Loan Date End' in ds.columns:
+    ds = ds.drop(columns=['Loan Date End'])
+
+if 'Hits' in ds.columns:
+    club_avg_hits = ds.groupby('Club')['Hits'].transform('mean')
+    ds['Hits'] = ds['Hits'].fillna(club_avg_hits)
+    ds['Hits'] = ds['Hits'].fillna(ds['Hits'].mean())
+
+drop_cols = [col for col in ds.columns if any(word in col.lower() for word in ['photo', 'flag', 'logo'])]
+ds = ds.drop(columns=drop_cols, errors='ignore')
 
 # Kontroll i vlerave unike për disa kolona kryesore
 for col in ['Nationality', 'Club', 'Preferred Foot']:
