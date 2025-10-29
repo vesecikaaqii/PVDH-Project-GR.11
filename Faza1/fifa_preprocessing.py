@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
@@ -115,11 +116,11 @@ for col in ['Nationality', 'Club', 'Preferred Foot']:
 #Trajtimi i kolonave me datat e kontrates
 ds['Joined'] = pd.to_datetime(ds['Joined'], errors='coerce')
 
-ds['Loan_Date_Orig'] = ds['Loan Date End']
-ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
-# Shfaq 10 rreshtat e pare dhe bej krahasimin para-pas   
-#NAN -> NaT
-print(ds[['Name', 'Loan_Date_Orig', 'Loan Date End']].head(10))
+# ds['Loan_Date_Orig'] = ds['Loan Date End']
+# ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
+# # Shfaq 10 rreshtat e pare dhe bej krahasimin para-pas   
+# #NAN -> NaT
+# print(ds[['Name', 'Loan_Date_Orig', 'Loan Date End']].head(10))
 
 #krijimi i vetive te reja prej vetive ekzistuese
 ds['SKILL'] = ds[['Dribbling', 'Curve', 'FK Accuracy', 'Long Passing', 'Ball Control']].mean(axis=1)
@@ -185,3 +186,10 @@ print(nationality_wage_total_sorted.head())
 print(players_per_club_sorted.head())
 print(club_median_age_sorted.head())
 print(club_value_summary.head())
+
+# Binarizim i Preferred Foot (po krijohet kolone e re)
+ds['Preferred_Foot_Binary'] = ds['Preferred Foot'].apply(lambda x: 1 if x=='Right' else 0)
+# Kontroll
+print(ds[['Preferred Foot', 'Preferred_Foot_Binary']].head())
+print(ds['Preferred_Foot_Binary'].value_counts())
+
