@@ -153,6 +153,19 @@ if 'Best Position' in ds.columns:
 #print(ds.iloc[35:101][['Name', 'Age_Group', 'Position_Category']])
 print(ds[['Name','Age_Group', 'Position_Category']].head())
 
+# Transformimi me normalizim
+ds['Value'] = pd.to_numeric(ds['Value'], errors='coerce').fillna(0)
+# Z-Score
+z_scaler = StandardScaler()
+ds['Value_Zscore'] = z_scaler.fit_transform(ds[['Value']])
+# Min-Max
+mm_scaler = MinMaxScaler()
+ds['Value_MinMax'] = mm_scaler.fit_transform(ds[['Value']])
+# Robust 
+r_scaler = RobustScaler()
+ds['Value_Robust'] = r_scaler.fit_transform(ds[['Value']]) #our choice
+#print(ds[['Name', 'Value', 'Value_Zscore', 'Value_MinMax', 'Value_Robust']].head(10))
+
 # dataset i ri
 ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
