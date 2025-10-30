@@ -1,5 +1,6 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, RobustScaler
 
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
@@ -80,6 +81,59 @@ players_per_club_sorted = players_per_club.sort_values(by='Number of Players', a
 club_median_age = ds.groupby('Club')['Age'].median().reset_index()
 club_median_age_sorted = club_median_age.sort_values(by='Age', ascending=False)
 
+club_ova_pot_agg = ds.groupby('Club').agg(
+    AverageOVA=('↓OVA', 'mean'),
+    MaxOVA=('↓OVA', 'max'),
+    MinOVA=('↓OVA', 'min'),
+    AveragePOT=('POT', 'mean'),
+    MaxPOT=('POT', 'max'),
+    MinPOT=('POT', 'min')
+).reset_index()
+
+def simplify_position(pos):
+    if isinstance(pos, str):
+        pos = pos.upper()
+        if pos in ['GK']:
+            return 'Goalkeeper'
+        elif pos in ['CB', 'LCB', 'RCB', 'LB', 'RB', 'LWB', 'RWB']:
+            return 'Defender'
+        elif pos in ['CDM', 'CM', 'LCM', 'RCM', 'CAM', 'LM', 'RM']:
+            return 'Midfielder'
+        elif pos in ['ST', 'CF', 'LW', 'RW', 'LF', 'RF']:
+            return 'Forward'
+        else:
+            return 'Other'
+    return 'Unknown'
+club_ova_pot_agg_sorted = club_ova_pot_agg.sort_values(by='AverageOVA', ascending=False)
+
+nationality_ova_pot_agg = ds.groupby('Nationality').agg(
+    AverageOVA=('↓OVA', 'mean'),
+    MaxOVA=('↓OVA', 'max'),
+    MinOVA=('↓OVA', 'min'),
+    AveragePOT=('POT', 'mean'),
+    MaxPOT=('POT', 'max'),
+    MinPOT=('POT', 'min')
+).reset_index()
+
+nationality_ova_pot_agg_sorted = nationality_ova_pot_agg.sort_values(by='AverageOVA', ascending=False)
+
+# Aggregation by Position Category for OVA and POT (average, max, min)
+position_ova_pot_agg = ds.groupby(ds['Best Position'].apply(simplify_position)).agg(
+    AverageOVA=('↓OVA', 'mean'),
+    MaxOVA=('↓OVA', 'max'),
+    MinOVA=('↓OVA', 'min'),
+    AveragePOT=('POT', 'mean'),
+    MaxPOT=('POT', 'max'),
+    MinPOT=('POT', 'min')
+).reset_index()
+
+# Sorting by average OVA
+position_ova_pot_agg_sorted = position_ova_pot_agg.sort_values(by='AverageOVA', ascending=False)
+club_ova_pot_agg_sorted.head(), nationality_ova_pot_agg_sorted.head(), position_ova_pot_agg_sorted.head()
+
+position_avg_ova_pot_direct = ds.groupby(ds['Best Position'].apply(simplify_position))[['↓OVA', 'POT']].mean().reset_index()
+position_avg_ova_pot_direct_sorted = position_avg_ova_pot_direct.sort_values(by='↓OVA', ascending=False)
+position_avg_ova_pot_direct_sorted.head()
 club_value_summary = ds.groupby('Club')['Value'].agg(
     TotalValue='sum',
     AverageValue='mean',
