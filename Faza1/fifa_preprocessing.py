@@ -68,6 +68,12 @@ def weight_to_kg(x):
 
 ds['Weight'] = ds['Weight'].apply(weight_to_kg).astype(int)
 
+#star rating columns, removing stars/symbols
+star_cols = ['W/F', 'SM', 'IR']
+for col in star_cols:
+    if col in ds.columns:
+        ds[col] = ds[col].astype(str).str.extract(r'(\d+)').astype(int)
+
 # Aggregation
 club_avg_value = ds.groupby('Club')['Value'].mean().reset_index()
 club_avg_value_sorted = club_avg_value.sort_values(by='Value', ascending=False)
@@ -104,6 +110,8 @@ def simplify_position(pos):
         else:
             return 'Other'
     return 'Unknown'
+
+ds['Best Position'] = ds['Best Position'].apply(simplify_position) #added per tabele
 club_ova_pot_agg_sorted = club_ova_pot_agg.sort_values(by='AverageOVA', ascending=False)
 
 nationality_ova_pot_agg = ds.groupby('Nationality').agg(
@@ -142,13 +150,13 @@ club_value_summary = ds.groupby('Club')['Value'].agg(
     NumPlayers='size'
 ).reset_index()
 
-#star rating columns, removing stars/symbols
-star_cols = ['W/F', 'SM', 'IR']
-for col in star_cols:
-    if col in ds.columns:
-        ds[col] = ds[col].astype(str).str.extract(r'(\d+)').astype(int)
+print(club_avg_value_sorted.head())
+print(nationality_wage_total_sorted.head())
+print(players_per_club_sorted.head())
+print(club_median_age_sorted.head())
+print(club_value_summary.head())
 
-clean_file_path = "fifa21_cleaned.csv"
+#clean_file_path = "fifa21_cleaned.csv"
 
 if 'Loan Date End' in ds.columns:
     ds = ds.drop(columns=['Loan Date End'])
@@ -196,54 +204,40 @@ if 'Age' in ds.columns:
         include_lowest=True
     )
 
-# Diskretizimi ne baze te pozites ne fushe (grouping)
-def simplify_position(pos):
-    if isinstance(pos, str):
-        pos = pos.upper()
-        if pos in ['GK']:
-            return 'Goalkeeper'
-        elif pos in ['CB', 'LCB', 'RCB', 'LB', 'RB', 'LWB', 'RWB']:
-            return 'Defender'
-        elif pos in ['CDM', 'CM', 'LCM', 'RCM', 'CAM', 'LM', 'RM']:
-            return 'Midfielder'
-        elif pos in ['ST', 'CF', 'LW', 'RW', 'LF', 'RF']:
-            return 'Forward'
-        else:
-            return 'Other'
-    return 'Unknown'
 
-if 'Best Position' in ds.columns:
-    ds['Position_Category'] = ds['Best Position'].apply(simplify_position)
-
-#print(ds.iloc[35:101][['Name', 'Age_Group', 'Position_Category']])
-print(ds[['Name','Age_Group', 'Position_Category']].head())
+#print(ds.iloc[35:101][['Name', 'Age_Group']])
+print(ds[['Name','Age_Group']].head())
 
 # Transformimi me normalizim
 ds['Value'] = pd.to_numeric(ds['Value'], errors='coerce').fillna(0)
 # Z-Score
-z_scaler = StandardScaler()
-ds['Value_Zscore'] = z_scaler.fit_transform(ds[['Value']])
+#z_scaler = StandardScaler()
+#ds['Value_Zscore'] = z_scaler.fit_transform(ds[['Value']])
 # Min-Max
-mm_scaler = MinMaxScaler()
-ds['Value_MinMax'] = mm_scaler.fit_transform(ds[['Value']])
+#mm_scaler = MinMaxScaler()
+#ds['Value_MinMax'] = mm_scaler.fit_transform(ds[['Value']])
 # Robust 
 r_scaler = RobustScaler()
 ds['Value_Robust'] = r_scaler.fit_transform(ds[['Value']]) #our choice
 #print(ds[['Name', 'Value', 'Value_Zscore', 'Value_MinMax', 'Value_Robust']].head(10))
 
-# dataset i ri
-ds.to_csv("fifa21_cleaned.csv", index=False)
-#ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
-
-print(club_avg_value_sorted.head())
-print(nationality_wage_total_sorted.head())
-print(players_per_club_sorted.head())
-print(club_median_age_sorted.head())
-print(club_value_summary.head())
-
 # Binarizim i Preferred Foot (po krijohet kolone e re)
 ds['Preferred_Foot_Binary'] = ds['Preferred Foot'].apply(lambda x: 1 if x=='Right' else 0)
 # Kontroll
 print(ds[['Preferred Foot', 'Preferred_Foot_Binary']].head())
-print(ds['Preferred_Foot_Binary'].value_counts())
+#print(ds['Preferred_Foot_Binary'].value_counts())
+
+# dataset i ri
+#ds.to_csv("fifa21_cleaned.csv", index=False)
+#ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
+
+selected_features = [
+    'Name', 'Nationality', 'Club', 'Wage','Joined','Age_Group','Best Position','Preferred_Foot_Binary',
+    'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING','Value_Robust'
+] 
+#reducted height+weight needs to be added
+#reduced W/F, SM, IR+... needs to be added
+
+subset_ds = ds[selected_features].copy()
+subset_ds.to_csv("fifa21_cleaned.csv", index=False)
 
