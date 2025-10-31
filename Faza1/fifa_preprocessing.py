@@ -3,6 +3,11 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
+import matplotlib.pyplot as plt
+from scipy import stats
+import numpy as np
+
+
 
 # Quick check per kolona
 ds.head()
@@ -276,3 +281,30 @@ print(ds['Best Position'].value_counts(normalize=True))
 
 # Kontrollo përqindjet e kategorive në mostrën e shtresuar
 print(sample_strat['Best Position'].value_counts(normalize=True))
+
+
+#Kualiteti i te dhenave
+ds = pd.read_csv("fifa21_cleaned.csv")
+
+numeric_cols = ['Age','↓OVA','POT','Value','Wage','Height','Weight',
+                'SKILL','MOVEMENT','POWER','MENTALITY','DEFENDING','GOALKEEPING']
+#Shfaqja e outliers
+def find_outliers_iqr(df, col):
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5*IQR
+    upper = Q3 + 1.5*IQR
+    outliers = df[(df[col] < lower) | (df[col] > upper)]
+    return outliers
+
+# Vizualizimi dhe printimi
+for col in numeric_cols:
+    if col in ds.columns:
+        outliers = find_outliers_iqr(ds, col)
+        print(f"{col} - Numri i outliers: {len(outliers)}")
+        # Boxplot
+        plt.figure(figsize=(8,4))
+        plt.boxplot(ds[col].dropna(), vert=False)
+        plt.title(f"Boxplot i {col}")
+        plt.show()
