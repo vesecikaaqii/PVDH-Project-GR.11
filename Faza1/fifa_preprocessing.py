@@ -15,7 +15,7 @@ ds.info()
 
 # Missing vlaues count
 ds.isnull().sum()
-#print("Duplicate rows:", ds.duplicated().sum()) #checking for duplicates
+print("Duplicate rows:", ds.duplicated().sum()) #checking for duplicates
 
 #konvertimi i vlerave
 def convert_value(x):
@@ -221,11 +221,13 @@ r_scaler = RobustScaler()
 ds['Value_Robust'] = r_scaler.fit_transform(ds[['Value']]) #our choice
 #print(ds[['Name', 'Value', 'Value_Zscore', 'Value_MinMax', 'Value_Robust']].head(10))
 
-# Binarizim i Preferred Foot (po krijohet kolone e re)
+
+#Binarizimi
 ds['Preferred_Foot_Binary'] = ds['Preferred Foot'].apply(lambda x: 1 if x=='Right' else 0)
 # Kontroll
 print(ds[['Preferred Foot', 'Preferred_Foot_Binary']].head())
 #print(ds['Preferred_Foot_Binary'].value_counts())
+
 
 #Dimensional Reduction
 ds['BMI'] = ds['Weight'] / (ds['Height'] / 100)**2 # Grupi 1: Vetite fizike te kaluluara sipas BMI
