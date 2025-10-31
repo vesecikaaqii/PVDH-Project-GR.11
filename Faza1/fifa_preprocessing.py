@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
@@ -47,8 +48,6 @@ def height_to_cm(x):
             return None
     return x
 
-ds['Height'] = ds['Height'].apply(height_to_cm).astype(int)
-
 # Konvertimi i weight
 def weight_to_kg(x):
     if isinstance(x, str):
@@ -65,8 +64,26 @@ def weight_to_kg(x):
             return None
     return x
 
-ds['Weight'] = ds['Weight'].apply(weight_to_kg).astype(int)
+#PCA
+cols_to_use = [ 'Height', 'Weight', 'W/F', 'SM', 'IR']
+cols_to_use = [c for c in cols_to_use if c in ds.columns]
+ds_pca = ds[cols_to_use].copy()
+ds_pca = ds_pca.dropna(thresh=len(ds_pca.columns)//2)
+for col in ds_pca.columns:
+    ds_pca[col] = pd.to_numeric(ds_pca[col].replace('[^0-9.-]', '', regex=True), errors='coerce')
 
+ds_pca = ds_pca.fillna(ds_pca.mean())
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(ds_pca)
+
+pca = PCA(n_components=0.95)
+X_pca = pca.fit_transform(X_scaled)
+
+pca_df = pd.DataFrame(X_pca, columns=[f'PC{i+1}' for i in range(X_pca.shape[1])])
+explained_variance = pca.explained_variance_ratio_.cumsum()
+
+pca_df.shape, explained_variance[-1]
 #star rating columns, removing stars/symbols
 star_cols = ['W/F', 'SM', 'IR']
 for col in star_cols:
