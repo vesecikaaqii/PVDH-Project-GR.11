@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
-
+from sklearn.model_selection import train_test_split
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
 # Quick check per kolona
@@ -256,3 +256,23 @@ print(f"Mostra përmban {len(sample_df)} rreshta nga gjithsej {len(ds)}")
 sample_df.head()
 
 
+#MOSTRIMI I SHTRESUAR
+
+# Supozojmë që ds është dataset-i i pastruar dhe ka kolonën 'Best Position'
+ds_strat = ds.dropna(subset=['Best Position']) 
+
+# Mostër 10% me stratifikim sipas Best Position
+_, sample_strat = train_test_split(
+    ds_strat,
+    test_size=0.1,            
+    stratify=ds_strat['Best Position'],  
+    random_state=42
+)
+
+sample_strat.to_csv("fifa21_sample_stratified.csv", index=False)
+
+# Kontrollo përqindjet e kategorive në datasetin origjinal
+print(ds['Best Position'].value_counts(normalize=True))
+
+# Kontrollo përqindjet e kategorive në mostrën e shtresuar
+print(sample_strat['Best Position'].value_counts(normalize=True))
