@@ -12,6 +12,7 @@ ds.info()
 ds.isnull().sum()
 #print("Duplicate rows:", ds.duplicated().sum()) #checking for duplicates
 
+#konvertimi i vlerave
 def convert_value(x):
     if isinstance(x, str):
         x = x.replace('€','').replace(',','')  # Remove € and commas
@@ -46,6 +47,8 @@ def height_to_cm(x):
             return None
     return x
 
+ds['Height'] = ds['Height'].apply(height_to_cm).astype(int)
+
 # Konvertimi i weight
 def weight_to_kg(x):
     if isinstance(x, str):
@@ -62,31 +65,30 @@ def weight_to_kg(x):
             return None
     return x
 
-#PCA
-cols_to_use = [ 'Height', 'Weight', 'W/F', 'SM', 'IR']
-cols_to_use = [c for c in cols_to_use if c in ds.columns]
-ds_pca = ds[cols_to_use].copy()
-ds_pca = ds_pca.dropna(thresh=len(ds_pca.columns)//2)
-for col in ds_pca.columns:
-    ds_pca[col] = pd.to_numeric(ds_pca[col].replace('[^0-9.-]', '', regex=True), errors='coerce')
+ds['Weight'] = ds['Weight'].apply(weight_to_kg).astype(int)
 
-ds_pca = ds_pca.fillna(ds_pca.mean())
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(ds_pca)
-
-pca = PCA(n_components=0.95)
-X_pca = pca.fit_transform(X_scaled)
-
-pca_df = pd.DataFrame(X_pca, columns=[f'PC{i+1}' for i in range(X_pca.shape[1])])
-explained_variance = pca.explained_variance_ratio_.cumsum()
-
-pca_df.shape, explained_variance[-1]
-#star rating columns, removing stars/symbols
+#Star rating columns, removing stars/symbols
 star_cols = ['W/F', 'SM', 'IR']
 for col in star_cols:
     if col in ds.columns:
         ds[col] = ds[col].astype(str).str.extract(r'(\d+)').astype(int)
+
+# Encodimi i vlerave
+work_rate_map = {'Low': 1, 'Medium': 2, 'High': 3}
+ds['A/W'] = ds['A/W'].map(work_rate_map)
+ds['D/W'] = ds['D/W'].map(work_rate_map)
+
+#Missing values handling
+if 'Loan Date End' in ds.columns:
+    ds = ds.drop(columns=['Loan Date End'])
+
+if 'Hits' in ds.columns:
+    club_avg_hits = ds.groupby('Club')['Hits'].transform('mean')
+    ds['Hits'] = ds['Hits'].fillna(club_avg_hits)
+    ds['Hits'] = ds['Hits'].fillna(ds['Hits'].mean())
+
+drop_cols = [col for col in ds.columns if any(word in col.lower() for word in ['photo', 'flag', 'logo'])]
+ds = ds.drop(columns=drop_cols, errors='ignore')
 
 # Aggregation
 club_avg_value = ds.groupby('Club')['Value'].mean().reset_index()
@@ -170,17 +172,6 @@ print(players_per_club_sorted.head())
 print(club_median_age_sorted.head())
 print(club_value_summary.head())
 
-if 'Loan Date End' in ds.columns:
-    ds = ds.drop(columns=['Loan Date End'])
-
-if 'Hits' in ds.columns:
-    club_avg_hits = ds.groupby('Club')['Hits'].transform('mean')
-    ds['Hits'] = ds['Hits'].fillna(club_avg_hits)
-    ds['Hits'] = ds['Hits'].fillna(ds['Hits'].mean())
-
-drop_cols = [col for col in ds.columns if any(word in col.lower() for word in ['photo', 'flag', 'logo'])]
-ds = ds.drop(columns=drop_cols, errors='ignore')
-
 # Kontroll i vlerave unike për disa kolona kryesore
 for col in ['Nationality', 'Club', 'Preferred Foot']:
     if col in ds.columns:
@@ -209,7 +200,6 @@ if 'Age' in ds.columns:
         labels=['Young', 'Prime', 'Veteran', 'Retired'],  # assign names
         include_lowest=True
     )
-
 #print(ds.iloc[35:101][['Name', 'Age_Group']])
 print(ds[['Name','Age_Group']].head())
 
@@ -232,15 +222,27 @@ ds['Preferred_Foot_Binary'] = ds['Preferred Foot'].apply(lambda x: 1 if x=='Righ
 print(ds[['Preferred Foot', 'Preferred_Foot_Binary']].head())
 #print(ds['Preferred_Foot_Binary'].value_counts())
 
+#Dimensional Reduction
+ds['BMI'] = ds['Weight'] / (ds['Height'] / 100)**2 # Grupi 1: Vetite fizike te kaluluara sipas BMI
+
+skills_cols = ['PAC','SHO','PAS','DRI','DEF','PHY'] # Group 2: Skill Ratings
+skills_scaled = StandardScaler().fit_transform(ds[skills_cols])
+pca_skills = PCA(n_components=1)
+ds['Skills_Component'] = pca_skills.fit_transform(skills_scaled)
+
+meta_cols = ['SM','A/W','D/W','IR'] #Group 3: Meta Data
+meta_scaled = StandardScaler().fit_transform(ds[meta_cols])
+pca_meta = PCA(n_components=1)
+ds['Meta_Component'] = pca_meta.fit_transform(meta_scaled)
+
 # dataset i ri
-#ds.to_csv("fifa21_cleaned.csv", index=False)
+ds.to_csv("fifa21_cleaned.csv", index=False)
 #ds.to_excel("fifa21_cleaned.xlsx", index=False, engine='openpyxl') #saved as an excel file
+#Zgjedhja e nen bashkesise se vetive
 
 selected_features = [
-    'Name', 'Nationality', 'Club', 'Wage','Joined','Age_Group','Best Position','Preferred_Foot_Binary',
-    'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING','Value_Robust'
-]
+    'Name', 'Nationality', 'Club', 'Wage','Joined','BMI','Age_Group','Best Position','Preferred_Foot_Binary',
+    'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING','Value_Robust','Meta_Component', 'Skills_Component']
 
 subset_ds = ds[selected_features].copy()
-subset_ds.to_csv("fifa21_cleaned.csv", index=False)
-
+subset_ds.to_csv("fifa21_cleaned1.csv", index=False)
