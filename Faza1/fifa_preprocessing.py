@@ -1,6 +1,5 @@
 import pandas as pd
-from sklearn.discriminant_analysis import StandardScaler
-from sklearn.preprocessing import MinMaxScaler, RobustScaler
+from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
