@@ -1,13 +1,13 @@
 import pandas as pd
+import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 from sklearn.model_selection import train_test_split
-ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
+from pandas.api.types import is_numeric_dtype
 import matplotlib.pyplot as plt
 from scipy import stats
-import numpy as np
 
-
+ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
 # Quick check per kolona
 ds.head()
@@ -253,21 +253,27 @@ selected_features = [
 
 subset_ds = ds[selected_features].copy()
 subset_ds.to_csv("fifa21_cleaned1.csv", index=False)
+ds= subset_ds 
+
+#Kualiteti i te dhenave 
+print("=== DATA QUALITY REPORT ===")
+print("Shape:", subset_ds.shape)
+print("\nColumn Data Types:")
+print(subset_ds.dtypes)
+print("\nNumber of Duplicate Rows:", subset_ds.duplicated().sum())
 
 
-#MOSTRIMI I THJESHTE 
+#MOSTRIMI I THJESHTE me datasetin e pastruar
 # Mostrimi i 10% të dataset-it
-sample_df = ds.sample(frac=0.1, random_state=42) 
-sample_df.to_csv("fifa21_sample.csv", index=False)
-print(f"Mostra përmban {len(sample_df)} rreshta nga gjithsej {len(ds)}")
-sample_df.head()
+sample_ds = ds.sample(frac=0.1, random_state=42) 
+sample_ds.to_csv("fifa21_sample.csv", index=False)
+print(f"Mostra përmban {len(sample_ds)} rreshta nga gjithsej {len(ds)}")
+sample_ds.head()
 
 
-#MOSTRIMI I SHTRESUAR
-
+#MOSTRIMI I SHTRESUAR me datasetin e pastruar
 # Supozojmë që ds është dataset-i i pastruar dhe ka kolonën 'Best Position'
 ds_strat = ds.dropna(subset=['Best Position']) 
-
 # Mostër 10% me stratifikim sipas Best Position
 _, sample_strat = train_test_split(
     ds_strat,
@@ -280,29 +286,25 @@ sample_strat.to_csv("fifa21_sample_stratified.csv", index=False)
 
 # Kontrollo përqindjet e kategorive në datasetin origjinal
 print(ds['Best Position'].value_counts(normalize=True))
-
 # Kontrollo përqindjet e kategorive në mostrën e shtresuar
 print(sample_strat['Best Position'].value_counts(normalize=True))
 
-
-#Kualiteti i te dhenave
-ds = pd.read_csv("fifa21_cleaned.csv")
-
-numeric_cols = ['Age','↓OVA','POT','Value','Wage','Height','Weight',
-                'SKILL','MOVEMENT','POWER','MENTALITY','DEFENDING','GOALKEEPING']
-#Shfaqja e outliers
-def find_outliers_iqr(df, col):
-    Q1 = df[col].quantile(0.25)
-    Q3 = df[col].quantile(0.75)
+"""
+# Shfaqja e outliers | Pjese e fazes se dyte
+def find_outliers_iqr(ds, col):
+    if not is_numeric_dtype(ds[col]):
+        return pd.DataFrame()  # Skip non-numeric
+    Q1 = ds[col].quantile(0.25)
+    Q3 = ds[col].quantile(0.75)
     IQR = Q3 - Q1
-    lower = Q1 - 1.5*IQR
-    upper = Q3 + 1.5*IQR
-    outliers = df[(df[col] < lower) | (df[col] > upper)]
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+    outliers = ds[(ds[col] < lower) | (ds[col] > upper)]
     return outliers
 
-# Vizualizimi dhe printimi
-for col in numeric_cols:
-    if col in ds.columns:
+# Vizualizimi dhe printimi | Pjese e fazes se trete
+for col in selected_features:
+    if col in ds.columns and is_numeric_dtype(ds[col]):
         outliers = find_outliers_iqr(ds, col)
         print(f"{col} - Numri i outliers: {len(outliers)}")
         # Boxplot
@@ -310,3 +312,6 @@ for col in numeric_cols:
         plt.boxplot(ds[col].dropna(), vert=False)
         plt.title(f"Boxplot i {col}")
         plt.show()
+    else:
+        print(f"{col} - Skipped (not numeric)")
+"""
