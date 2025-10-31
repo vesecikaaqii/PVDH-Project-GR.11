@@ -246,3 +246,13 @@ selected_features = [
 
 subset_ds = ds[selected_features].copy()
 subset_ds.to_csv("fifa21_cleaned1.csv", index=False)
+
+
+#MOSTRIMI I THJESHTE 
+# Mostrimi i 10% të dataset-it
+sample_df = ds.sample(frac=0.1, random_state=42) 
+sample_df.to_csv("fifa21_sample.csv", index=False)
+print(f"Mostra përmban {len(sample_df)} rreshta nga gjithsej {len(ds)}")
+sample_df.head()
+
+
