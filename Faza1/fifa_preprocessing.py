@@ -5,8 +5,6 @@ from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 ds = pd.read_csv("../fifa21 raw data v2.csv", low_memory=False)
 
 # Quick check per kolona
-#print(ds.shape)
-#print(ds.columns)
 ds.head()
 ds.info()
 
@@ -172,8 +170,6 @@ print(players_per_club_sorted.head())
 print(club_median_age_sorted.head())
 print(club_value_summary.head())
 
-#clean_file_path = "fifa21_cleaned.csv"
-
 if 'Loan Date End' in ds.columns:
     ds = ds.drop(columns=['Loan Date End'])
 
@@ -194,12 +190,6 @@ for col in ['Nationality', 'Club', 'Preferred Foot']:
 #Trajtimi i kolonave me datat e kontrates
 ds['Joined'] = pd.to_datetime(ds['Joined'], errors='coerce')
 
-# ds['Loan_Date_Orig'] = ds['Loan Date End']
-# ds['Loan Date End'] = pd.to_datetime(ds['Loan Date End'], errors='coerce')
-# # Shfaq 10 rreshtat e pare dhe bej krahasimin para-pas   
-# #NAN -> NaT
-# print(ds[['Name', 'Loan_Date_Orig', 'Loan Date End']].head(10))
-
 #krijimi i vetive te reja prej vetive ekzistuese
 ds['SKILL'] = ds[['Dribbling', 'Curve', 'FK Accuracy', 'Long Passing', 'Ball Control']].mean(axis=1)
 ds['MOVEMENT'] = ds[['Acceleration', 'Sprint Speed', 'Agility', 'Reactions', 'Balance']].mean(axis=1)
@@ -219,7 +209,6 @@ if 'Age' in ds.columns:
         labels=['Young', 'Prime', 'Veteran', 'Retired'],  # assign names
         include_lowest=True
     )
-
 
 #print(ds.iloc[35:101][['Name', 'Age_Group']])
 print(ds[['Name','Age_Group']].head())
@@ -250,9 +239,7 @@ print(ds[['Preferred Foot', 'Preferred_Foot_Binary']].head())
 selected_features = [
     'Name', 'Nationality', 'Club', 'Wage','Joined','Age_Group','Best Position','Preferred_Foot_Binary',
     'SKILL', 'MOVEMENT', 'POWER', 'MENTALITY', 'DEFENDING', 'GOALKEEPING','Value_Robust'
-] 
-#reducted height+weight needs to be added
-#reduced W/F, SM, IR+... needs to be added
+]
 
 subset_ds = ds[selected_features].copy()
 subset_ds.to_csv("fifa21_cleaned.csv", index=False)
